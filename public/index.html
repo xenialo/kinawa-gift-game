@@ -260,6 +260,7 @@ function render(){
   else if(view.screen === 'hostDash') renderHostDash(body);
   else if(view.screen === 'playerPick') renderPlayerPick(body);
   else if(view.screen === 'playerForm') renderPlayerForm(body);
+  else if(view.screen === 'playerPwGate') renderPlayerPwGate(body);
   else if(view.screen === 'playerHub') renderPlayerHub(body);
   else if(view.screen === 'playerQuiz') renderPlayerQuiz(body);
   else if(view.screen === 'results') renderResults(body);
@@ -269,6 +270,7 @@ function render(){
 async function renderHome(body){
   body.innerHTML = `<div class="card loading">載入中...</div>`;
   const names = await getNames();
+  const phase = await getPhase();
   body.innerHTML = '';
 
   const card = document.createElement('div');
@@ -280,11 +282,18 @@ async function renderHome(body){
     ${names.length === 12
       ? `<button class="btn btn-primary" id="goPlayer">✈️ 我是其中一位旅伴，開始填寫</button>`
       : `<div class="small">主辦人還沒建立 12 人名單，請先請主辦人進入「主辦人」設定名單。</div>`}
+    ${phase === 'revealed' ? `<button class="btn btn-gold" id="goResults" style="margin-top:10px;">🎉 查看解答與排行榜</button>` : ''}
   `;
   body.appendChild(card);
-  card.querySelector('#goHost').onclick = () => { view = {screen:'hostSetup'}; render(); };
+  card.querySelector('#goHost').onclick = () => {
+    const pw = prompt('請輸入主辦人密碼：');
+    if(pw !== '0327'){ showToast('密碼錯誤'); return; }
+    view = {screen:'hostSetup'}; render();
+  };
   const pb = card.querySelector('#goPlayer');
   if(pb) pb.onclick = () => { view = {screen:'playerPick'}; render(); };
+  const rb = card.querySelector('#goResults');
+  if(rb) rb.onclick = () => { view = {screen:'results'}; render(); };
 }
 
 // ---------- HOST SETUP ----------
@@ -459,11 +468,43 @@ async function renderPlayerPick(body){
   `;
   body.appendChild(card);
   card.querySelectorAll('.pill').forEach(p=>{
-    p.onclick = () => {
-      view = {screen:'playerHub', me: parseInt(p.dataset.i)};
-      render();
+    p.onclick = async () => {
+      const i = parseInt(p.dataset.i);
+      const sub = await getSubmission(i);
+      if(!sub){
+        view = {screen:'playerForm', me: i};
+        render();
+      } else {
+        view = {screen:'playerPwGate', me: i, next:'playerHub'};
+        render();
+      }
     };
   });
+}
+
+// ---------- PASSWORD GATE ----------
+async function renderPlayerPwGate(body){
+  const names = await getNames();
+  const me = view.me;
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <span class="stamp">${names[me]}</span>
+    <h2>請輸入你的密碼</h2>
+    <div class="small">為了保護大家的猜謎對象不被偷看，請輸入你當初設定的密碼。</div>
+    <input type="password" id="pwInput" placeholder="輸入密碼">
+    <button class="btn btn-primary" id="pwSubmit">確認</button>
+  `;
+  body.appendChild(card);
+  const submit = async () => {
+    const sub = await getSubmission(me);
+    const input = card.querySelector('#pwInput').value;
+    if(!sub || input !== sub.password){ showToast('密碼錯誤'); return; }
+    view = {screen: view.next, me, pw: input};
+    render();
+  };
+  card.querySelector('#pwSubmit').onclick = submit;
+  card.querySelector('#pwInput').addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
 }
 
 // ---------- PLAYER FORM ----------
@@ -476,6 +517,10 @@ async function renderPlayerForm(body){
     <span class="stamp">填寫你的線索吊牌</span>
     <h2>${names[me]}，寫下真實的自己</h2>
     <div class="small">這段話會在交換禮物那天被唸出來，大家要猜是不是你。請寫真實內容～</div>
+
+    <label>設定你的密碼</label>
+    <input type="password" id="f_pw" placeholder="英文大小寫＋數字，至少8碼">
+    <div class="small" style="color:var(--coral);font-weight:700;">⚠️ 之後要查看「猜禮物對象」與「作答考卷」都需要這組密碼，請務必記住！</div>
 
     <label>性別</label>
     <select id="f_gender">
@@ -494,6 +539,10 @@ async function renderPlayerForm(body){
 
     <label>最想去的國家是</label>
     <input type="text" id="f_country" placeholder="例如：冰島">
+    <label style="display:flex;align-items:center;gap:8px;font-weight:400;margin-top:8px;">
+      <input type="checkbox" id="f_countryNotBeen" style="width:auto;">
+      我還沒去過這個國家
+    </label>
 
     <label>這些年我做過最荒謬的事是</label>
     <textarea id="f_absurd" placeholder="越具體越好猜，越荒謬越好笑"></textarea>
@@ -503,18 +552,23 @@ async function renderPlayerForm(body){
   body.appendChild(card);
   card.querySelector('#submitForm').onclick = async () => {
     const btn = card.querySelector('#submitForm');
+    const pw = card.querySelector('#f_pw').value;
+    const pwOk = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pw);
+    if(!pwOk){ showToast('密碼需英文大小寫＋數字，至少8碼'); return; }
     const data = {
+      password: pw,
       gender: card.querySelector('#f_gender').value,
       hobby: card.querySelector('#f_hobby').value.trim(),
       drink: card.querySelector('#f_drink').value.trim(),
       food: card.querySelector('#f_food').value.trim(),
       country: card.querySelector('#f_country').value.trim(),
+      countryNotBeen: card.querySelector('#f_countryNotBeen').checked,
       absurd: card.querySelector('#f_absurd').value.trim(),
     };
-    if(Object.values(data).some(v=>!v)){ showToast('每一格都要填喔'); return; }
+    if(!data.gender || !data.hobby || !data.drink || !data.food || !data.country || !data.absurd){ showToast('每一格都要填喔'); return; }
     btn.disabled = true; btn.textContent = '送出中...';
     const ok = await sSet('sub-'+me, data);
-    if(ok){ showToast('送出成功！'); view = {screen:'playerHub', me}; render(); }
+    if(ok){ showToast('送出成功！請記住你的密碼'); view = {screen:'playerHub', me, pw}; render(); }
     else { btn.disabled = false; btn.textContent = '送出我的吊牌'; }
   };
 }
@@ -530,6 +584,11 @@ async function renderPlayerHub(body){
 
   if(!mySub){
     renderPlayerForm(body);
+    return;
+  }
+  if(view.pw !== mySub.password){
+    view = {screen:'playerPwGate', me, next:'playerHub'};
+    render();
     return;
   }
 
@@ -554,10 +613,10 @@ async function renderPlayerHub(body){
       <div class="clue-line">是一個 <b>${targetSub.gender}</b> 生</div>
       <div class="clue-line">興趣是 <b>${targetSub.hobby}</b></div>
       <div class="clue-line">最愛喝 <b>${targetSub.drink}</b>，最愛吃 <b>${targetSub.food}</b></div>
-      <div class="clue-line">最想去 <b>${targetSub.country}</b></div>
+      <div class="clue-line">最想去 <b>${targetSub.country}</b>${targetSub.countryNotBeen ? ' <span style="color:var(--hibiscus);font-weight:700;">（尚未去過）</span>' : ''}</div>
       <div class="clue-line">這些年最荒謬的事：<b>${targetSub.absurd}</b></div>
       <div class="divider"></div>
-      <div class="small"><b>任務：</b>憑這些線索猜出他/她是誰，準備一份約 <b>NT$1000</b> 的禮物，外觀統一用牛皮紙袋包裝（不要被認出來），第三天晚上現場交換＋公布解答！</div>
+      <div class="small"><b>任務：</b>憑這些線索猜出他/她是誰，準備一份約 <b>NT$1000</b> 的禮物，第三天晚上現場交換＋公布解答！</div>
     `;
     body.appendChild(tag);
   } else {
@@ -577,7 +636,7 @@ async function renderPlayerHub(body){
     const qbtn = document.createElement('button');
     qbtn.className = 'btn btn-gold';
     qbtn.textContent = myAns ? '考卷已交，查看作答內容' : '📝 開始作答（猜猜每張吊牌是誰）';
-    qbtn.onclick = () => { view = {screen:'playerQuiz', me}; render(); };
+    qbtn.onclick = () => { view = {screen:'playerPwGate', me, next:'playerQuiz'}; render(); };
     body.appendChild(qbtn);
   }
 
@@ -597,6 +656,12 @@ async function renderPlayerQuiz(body){
   body.innerHTML = `<div class="card loading">載入中...</div>`;
   const names = await getNames();
   const me = view.me;
+  const mySub = await getSubmission(me);
+  if(mySub && view.pw !== mySub.password){
+    view = {screen:'playerPwGate', me, next:'playerQuiz'};
+    render();
+    return;
+  }
   const order = await getQuizOrder();
   const existing = await getQuizAnswer(me);
   const subs = await getAllSubmissions(names);
@@ -604,11 +669,22 @@ async function renderPlayerQuiz(body){
 
   const intro = document.createElement('div');
   intro.className = 'card';
-  intro.innerHTML = `
-    <span class="stamp">交換禮物搶答考卷</span>
-    <h2>這 12 張吊牌，分別是誰？</h2>
-    <div class="small">${existing? '你已經交卷囉，以下是你當時的答案。' : '每一題選一個你覺得最符合的人，全部選完再送出。'}</div>
-  `;
+  if(existing){
+    const score = await sGet('score-'+me);
+    intro.innerHTML = `
+      <span class="stamp">交換禮物搶答考卷</span>
+      <h2>你已經交卷囉</h2>
+      <div class="small">以下是你當時選的答案。正式解答要等主辦人公布喔！</div>
+      <div class="divider"></div>
+      <div style="font-size:22px;font-weight:900;color:var(--sea);">你答對 ${score ?? 0} / 12 題</div>
+    `;
+  } else {
+    intro.innerHTML = `
+      <span class="stamp">交換禮物搶答考卷</span>
+      <h2>這 12 張吊牌，分別是誰？</h2>
+      <div class="small">每一題選一個你覺得最符合的人，全部選完再送出。</div>
+    `;
+  }
   body.appendChild(intro);
 
   const selects = [];
@@ -620,7 +696,7 @@ async function renderPlayerQuiz(body){
       <div class="clue-line"><span class="num-badge">${qi+1}</span>
         <div>
           ${s.gender}生・興趣是${s.hobby}・最愛喝${s.drink}、吃${s.food}<br>
-          最想去 <b>${s.country}</b><br>
+          最想去 <b>${s.country}</b>${s.countryNotBeen ? ' <span style="color:var(--hibiscus);font-weight:700;">（尚未去過）</span>' : ''}<br>
           最荒謬的事：<b>${s.absurd}</b>
         </div>
       </div>
@@ -648,7 +724,7 @@ async function renderPlayerQuiz(body){
         answers.forEach((a, qi) => { if(a === order[qi]) score++; });
         await sSet('score-'+me, score);
         showToast(`交卷成功！你答對 ${score} / 12 題`);
-        view = {screen:'playerHub', me}; render();
+        renderPlayerQuiz(body);
       } else {
         submitBtn.disabled = false; submitBtn.textContent = '送出答案';
       }
@@ -658,7 +734,7 @@ async function renderPlayerQuiz(body){
     const back = document.createElement('button');
     back.className = 'btn btn-ghost';
     back.textContent = '← 返回';
-    back.onclick = () => { view = {screen:'playerHub', me}; render(); };
+    back.onclick = () => { view = {screen:'playerHub', me, pw: view.pw}; render(); };
     body.appendChild(back);
   }
 }
@@ -705,7 +781,7 @@ async function renderResults(body){
         </tr>`).join('')}
     </table>
     <div class="divider"></div>
-    <div class="small"><b style="color:var(--hibiscus)">懲罰時間：</b>答對最少的人，要立刻自拍一張醜照，發限時動態並標記所有人 📸</div>
+    <div class="small"><b style="color:var(--hibiscus)">懲罰時間：</b>最後一名（並列也算）的人，要立刻自拍一張鬼臉照，發限時動態並標記所有人 📸</div>
   `;
   body.appendChild(lead);
 
@@ -720,7 +796,7 @@ async function renderResults(body){
       row.innerHTML = `
         <div class="clue-line"><span class="num-badge">${qi+1}</span>
           <div><b>${names[ownerIdx]}</b><br>
-          ${s.gender}生・${s.hobby}・愛喝${s.drink}・愛吃${s.food}・想去${s.country}<br>
+          ${s.gender}生・${s.hobby}・愛喝${s.drink}・愛吃${s.food}・想去${s.country}${s.countryNotBeen ? '（尚未去過）' : ''}<br>
           荒謬事蹟：${s.absurd}</div>
         </div>
       `;
