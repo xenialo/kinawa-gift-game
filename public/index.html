@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>沖繩秘密旅伴 · 行李吊牌猜謎</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sea:#0f3d3e;
+    --sea-deep:#082527;
+    --sand:#f4e9d6;
+    --coral:#ff6f59;
+    --gold:#e8b84b;
+    --hibiscus:#e54b6e;
+    --ink:#1c2b2b;
+    --paper:#fffaf0;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Noto Sans TC', sans-serif;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(232,184,75,0.12), transparent 45%),
+      radial-gradient(circle at 90% 80%, rgba(229,75,110,0.10), transparent 50%),
+      var(--sea-deep);
+    color:var(--paper);
+    min-height:100vh;
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:24px 18px 80px;}
+  h1.brand{
+    font-family:'Noto Serif TC', serif;
+    font-weight:900;
+    font-size:26px;
+    letter-spacing:1px;
+    margin:6px 0 2px;
+    color:var(--gold);
+  }
+  .sub{font-size:13px;opacity:0.7;margin-bottom:24px;letter-spacing:1px;}
+  .card{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:18px;
+    padding:22px 20px;
+    margin-bottom:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    position:relative;
+  }
+  .tag{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:14px;
+    padding:20px 18px 20px 28px;
+    margin-bottom:16px;
+    position:relative;
+    box-shadow:0 8px 22px rgba(0,0,0,0.22);
+    border-left:6px dashed var(--coral);
+  }
+  .tag::before{
+    content:'';
+    position:absolute;
+    left:-9px; top:50%; transform:translateY(-50%);
+    width:18px;height:18px;border-radius:50%;
+    background:var(--sea-deep);
+    border:3px solid var(--gold);
+  }
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--coral);
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  h2{
+    font-family:'Noto Serif TC', serif;
+    font-size:19px;
+    margin:0 0 14px;
+    color:var(--sea);
+  }
+  label{display:block;font-size:13px;font-weight:700;margin:14px 0 6px;color:var(--sea);}
+  input[type=text], select, textarea{
+    width:100%;
+    padding:11px 12px;
+    border-radius:10px;
+    border:1.5px solid #d8cdb0;
+    font-size:15px;
+    font-family:inherit;
+    background:#fffef9;
+    color:var(--ink);
+  }
+  textarea{min-height:64px;resize:vertical;}
+  .btn{
+    display:inline-block;
+    width:100%;
+    text-align:center;
+    padding:13px 16px;
+    border-radius:12px;
+    border:none;
+    font-family:'Noto Sans TC', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    cursor:pointer;
+    margin-top:16px;
+    letter-spacing:0.5px;
+  }
+  .btn-primary{background:var(--coral);color:#fff;}
+  .btn-primary:disabled{background:#cbb;opacity:0.5;cursor:not-allowed;}
+  .btn-gold{background:var(--gold);color:var(--sea-deep);}
+  .btn-ghost{background:transparent;border:1.5px solid var(--paper);color:var(--paper);}
+  .btn-outline{background:transparent;border:1.5px solid var(--sea);color:var(--sea);}
+  .btn-danger{background:transparent;border:1.5px solid var(--hibiscus);color:var(--hibiscus);font-size:12px;padding:8px 12px;margin-top:8px;}
+  .pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+  .pill{
+    padding:8px 14px;border-radius:999px;border:1.5px solid var(--sea);
+    background:#fff; color:var(--sea); font-size:13px; font-weight:700; cursor:pointer;
+  }
+  .pill.active{background:var(--sea);color:#fff;}
+  .pill.done{border-color:#8fae8a;color:#5a8a55;}
+  .pill.done::after{content:' ✓';}
+  .small{font-size:12px;opacity:0.65;line-height:1.6;}
+  .divider{height:1px;background:rgba(255,255,255,0.15);margin:22px 0;}
+  .stamp{
+    display:inline-block;
+    background:var(--gold);
+    color:var(--sea-deep);
+    font-weight:900;
+    font-size:12px;
+    padding:4px 10px;
+    border-radius:999px;
+    margin-bottom:10px;
+    letter-spacing:1px;
+  }
+  .num-badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:50%;
+    background:var(--sea);color:#fff;font-weight:900;font-size:13px;
+    margin-right:8px; flex-shrink:0;
+  }
+  .clue-line{display:flex;align-items:flex-start;margin-bottom:8px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .linkbtn{background:none;border:none;color:var(--gold);font-size:13px;font-weight:700;cursor:pointer;padding:0;}
+  .progress-track{height:8px;background:rgba(255,255,255,0.15);border-radius:999px;overflow:hidden;margin:10px 0 4px;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--gold));}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;}
+  td,th{padding:8px 6px;border-bottom:1px solid #e9e0c8;text-align:left;}
+  .rank-gold{color:var(--gold);font-weight:900;}
+  .rank-last{color:var(--hibiscus);font-weight:900;}
+  .loading{opacity:0.6;font-size:13px;}
+  .toast{
+    position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+    background:var(--sea); color:#fff; padding:10px 18px; border-radius:999px;
+    font-size:13px; box-shadow:0 6px 18px rgba(0,0,0,0.3); z-index:50;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const STORAGE_PREFIX = "oka26-";
+let toastTimer = null;
+function showToast(msg){
+  let el = document.getElementById('toast');
+  if(!el){ el = document.createElement('div'); el.id='toast'; el.className='toast'; document.body.appendChild(el); }
+  el.textContent = msg;
+  el.style.display='block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ el.style.display='none'; }, 2400);
+}
+
+// ---------- REST API storage helpers ----------
+async function sGet(key){
+  try{
+    const r = await fetch('/api/get/' + encodeURIComponent(STORAGE_PREFIX + key));
+    const d = await r.json();
+    return d.value ? JSON.parse(d.value) : null;
+  }catch(e){ return null; }
+}
+async function sSet(key, value){
+  try{
+    const r = await fetch('/api/set/' + encodeURIComponent(STORAGE_PREFIX + key), {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ value: JSON.stringify(value) })
+    });
+    const d = await r.json();
+    return d.ok === true;
+  }catch(e){
+    showToast('儲存失敗，請檢查網路後再按一次');
+    return false;
+  }
+}
+async function sList(prefix){
+  try{
+    const r = await fetch('/api/list/' + encodeURIComponent(STORAGE_PREFIX + prefix));
+    const d = await r.json();
+    return d.keys || [];
+  }catch(e){ return []; }
+}
+
+// ---------- game data helpers ----------
+async function getNames(){ return (await sGet('names')) || []; }
+async function getPhase(){ return (await sGet('phase')) || 'setup'; }
+async function getSubmission(idx){ return await sGet('sub-'+idx); }
+async function getAllSubmissions(names){
+  const out = {};
+  for(let i=0;i<names.length;i++){ out[i] = await getSubmission(i); }
+  return out;
+}
+async function getAssignment(){ return await sGet('assignment'); }
+async function getQuizOrder(){ return await sGet('quizorder'); }
+async function getQuizAnswer(idx){ return await sGet('quizans-'+idx); }
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function genDerangement(n){
+  if(n<2) return [];
+  let perm, tries=0;
+  do{
+    perm = shuffle([...Array(n).keys()]);
+    tries++;
+  } while(perm.some((v,i)=>v===i) && tries<500);
+  return perm;
+}
+
+// ---------- app state / router ----------
+const root = document.getElementById('root');
+let view = { screen: 'home' };
+
+function render(){
+  root.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'wrap';
+  root.appendChild(wrap);
+
+  const header = document.createElement('div');
+  header.innerHTML = `
+    <div class="topbar">
+      <div>
+        <div class="eyebrow">12人 · 沖繩 Naha GoGo</div>
+        <h1 class="brand">秘密旅伴行李吊牌</h1>
+      </div>
+      ${view.screen!=='home' ? '<button class="linkbtn" id="homeBtn">← 回首頁</button>' : ''}
+    </div>
+    <div class="sub">寫下真實的自己，讓朋友從線索裡找到你 — 也找到要送誰禮物</div>
+  `;
+  wrap.appendChild(header);
+  const homeBtn = header.querySelector('#homeBtn');
+  if(homeBtn) homeBtn.onclick = () => { view = {screen:'home'}; render(); };
+
+  const body = document.createElement('div');
+  wrap.appendChild(body);
+
+  if(view.screen === 'home') renderHome(body);
+  else if(view.screen === 'hostSetup') renderHostSetup(body);
+  else if(view.screen === 'hostDash') renderHostDash(body);
+  else if(view.screen === 'playerPick') renderPlayerPick(body);
+  else if(view.screen === 'playerForm') renderPlayerForm(body);
+  else if(view.screen === 'playerHub') renderPlayerHub(body);
+  else if(view.screen === 'playerQuiz') renderPlayerQuiz(body);
+  else if(view.screen === 'results') renderResults(body);
+}
+
+// ---------- HOME ----------
+async function renderHome(body){
+  body.innerHTML = `<div class="card loading">載入中...</div>`;
+  const names = await getNames();
+  body.innerHTML = '';
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <h2>我是...</h2>
+    <button class="btn btn-outline" id="goHost">🧭 主辦人（管理遊戲）</button>
+    <div class="divider"></div>
+    ${names.length === 12
+      ? `<button class="btn btn-primary" id="goPlayer">✈️ 我是其中一位旅伴，開始填寫</button>`
+      : `<div class="small">主辦人還沒建立 12 人名單，請先請主辦人進入「主辦人」設定名單。</div>`}
+  `;
+  body.appendChild(card);
+  card.querySelector('#goHost').onclick = () => { view = {screen:'hostSetup'}; render(); };
+  const pb = card.querySelector('#goPlayer');
+  if(pb) pb.onclick = () => { view = {screen:'playerPick'}; render(); };
+}
+
+// ---------- HOST SETUP ----------
+async function renderHostSetup(body){
+  const names = await getNames();
+  if(names && names.length === 12){ view = {screen:'hostDash'}; render(); return; }
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <span class="stamp">STEP 1</span>
+    <h2>建立 12 人名單</h2>
+    <div class="small" style="margin-bottom:8px;">輸入大家的真實姓名（暱稱也可以），等等每個人會從這份名單裡點選自己。</div>
+    ${Array.from({length:12}).map((_,i)=>`<input type="text" placeholder="第 ${i+1} 位的名字" class="nameInput" data-i="${i}" style="margin-bottom:8px;">`).join('')}
+    <button class="btn btn-primary" id="saveNames">儲存名單，建立遊戲</button>
+  `;
+  body.appendChild(card);
+  card.querySelector('#saveNames').onclick = async () => {
+    const btn = card.querySelector('#saveNames');
+    const inputs = [...card.querySelectorAll('.nameInput')];
+    const vals = inputs.map(i=>i.value.trim());
+    if(vals.some(v=>!v)){ showToast('12 個名字都要填喔'); return; }
+    if(new Set(vals).size !== 12){ showToast('名字不能重複，請用不同稱呼'); return; }
+    btn.disabled = true; btn.textContent = '儲存中...';
+    const ok = await sSet('names', vals);
+    if(!ok){ btn.disabled = false; btn.textContent = '儲存名單，建立遊戲'; return; }
+    await sSet('phase', 'submitting');
+    showToast('名單建立完成！');
+    view = {screen:'hostDash'}; render();
+  };
+}
+
+// ---------- HOST DASHBOARD ----------
+async function renderHostDash(body){
+  body.innerHTML = `<div class="card loading">載入中...</div>`;
+  const names = await getNames();
+  if(!names.length){ view={screen:'hostSetup'}; render(); return; }
+  const phase = await getPhase();
+  const subs = await getAllSubmissions(names);
+  const submittedCount = Object.values(subs).filter(Boolean).length;
+
+  body.innerHTML = '';
+
+  const status = document.createElement('div');
+  status.className = 'card';
+  status.innerHTML = `
+    <span class="stamp">主辦人後台</span>
+    <h2>填卡進度：${submittedCount} / 12</h2>
+    <div class="progress-track"><div class="progress-fill" style="width:${submittedCount/12*100}%"></div></div>
+    <div class="pill-row" style="margin-top:14px;">
+      ${names.map((n,i)=>`<span class="pill ${subs[i]?'done':''}">${n}</span>`).join('')}
+    </div>
+    <button class="btn btn-primary" id="refreshBtn" style="margin-top:14px;">🔄 重新整理進度</button>
+  `;
+  body.appendChild(status);
+  status.querySelector('#refreshBtn').onclick = () => renderHostDash(body);
+
+  // Phase: assignment
+  const assignCard = document.createElement('div');
+  assignCard.className = 'card';
+  const assignment = await getAssignment();
+  if(!assignment){
+    assignCard.innerHTML = `
+      <span class="stamp">STEP 2</span>
+      <h2>亂數分配送禮對象</h2>
+      <div class="small">全部 12 人填完才能分配。分配後每人會看到「自己要送禮物給誰的線索」，但不知道對方是誰，要自己用線索猜＋準備一份 NT$1000 左右的禮物。</div>
+      <button class="btn btn-primary" id="doAssign" ${submittedCount<12?'disabled':''}>${submittedCount<12?'尚未集滿 12 人':'🎲 立即分配'}</button>
+    `;
+  } else {
+    assignCard.innerHTML = `
+      <span class="stamp">STEP 2 ✓</span>
+      <h2>已完成分配</h2>
+      <div class="small">大家已經知道要送禮物給誰的線索了（不知道真名）。等大家逛街買好禮物，再進行 STEP 3。</div>
+    `;
+  }
+  body.appendChild(assignCard);
+  const assignBtn = assignCard.querySelector('#doAssign');
+  if(assignBtn){
+    assignBtn.onclick = async () => {
+      assignBtn.disabled = true; assignBtn.textContent = '分配中...';
+      const perm = genDerangement(12);
+      const map = {};
+      perm.forEach((target, giver) => { map[giver] = target; });
+      const ok = await sSet('assignment', map);
+      if(ok){ await sSet('phase','assigned'); showToast('分配完成！'); renderHostDash(body); }
+    };
+  }
+
+  // Phase: quiz
+  if(assignment){
+    const quizOrder = await getQuizOrder();
+    const quizCard = document.createElement('div');
+    quizCard.className = 'card';
+    if(!quizOrder){
+      quizCard.innerHTML = `
+        <span class="stamp">STEP 3</span>
+        <h2>產出交換禮物前的考卷</h2>
+        <div class="small">交換禮物前，把 12 張線索卡打亂編號，讓大家像考試一樣搶猜每張卡是誰。</div>
+        <button class="btn btn-primary" id="doQuiz">📝 產生考卷</button>
+      `;
+    } else {
+      quizCard.innerHTML = `
+        <span class="stamp">STEP 3 ✓</span>
+        <h2>考卷已產生</h2>
+        <div class="small">請大家在自己的手機上作答，全部交卷後可以公布解答。</div>
+      `;
+    }
+    body.appendChild(quizCard);
+    const quizBtn = quizCard.querySelector('#doQuiz');
+    if(quizBtn){
+      quizBtn.onclick = async () => {
+        quizBtn.disabled = true; quizBtn.textContent = '產生中...';
+        const order = shuffle([...Array(12).keys()]);
+        const ok = await sSet('quizorder', order);
+        if(ok){ await sSet('phase','quiz'); showToast('考卷已產生！'); renderHostDash(body); }
+      };
+    }
+
+    if(quizOrder){
+      const answeredKeys = await sList('quizans-');
+      const answeredCount = answeredKeys.length;
+      const revealCard = document.createElement('div');
+      revealCard.className = 'card';
+      revealCard.innerHTML = `
+        <span class="stamp">STEP 4</span>
+        <h2>公布解答 &amp; 排行榜</h2>
+        <div class="small">已交卷：${answeredCount} / 12</div>
+        <button class="btn btn-gold" id="doReveal">🎉 公布解答與排行榜</button>
+      `;
+      body.appendChild(revealCard);
+      revealCard.querySelector('#doReveal').onclick = async () => {
+        await sSet('phase','revealed');
+        view = {screen:'results'}; render();
+      };
+    }
+  }
+
+  // Reset game button
+  const resetCard = document.createElement('div');
+  resetCard.className = 'card';
+  resetCard.innerHTML = `
+    <div class="small" style="margin-bottom:4px;">⚠️ 危險區域</div>
+    <button class="btn btn-danger" id="resetBtn">🗑 重置整場遊戲（清除所有資料）</button>
+  `;
+  body.appendChild(resetCard);
+  resetCard.querySelector('#resetBtn').onclick = async () => {
+    if(!confirm('確定要清除所有遊戲資料嗎？這個動作無法還原！')) return;
+    await fetch('/api/reset', { method:'DELETE' });
+    showToast('遊戲已重置');
+    view = {screen:'home'}; render();
+  };
+
+  if(phase === 'revealed'){
+    const goResult = document.createElement('button');
+    goResult.className='btn btn-ghost';
+    goResult.textContent='查看完整解答與排行榜';
+    goResult.onclick = () => { view={screen:'results'}; render(); };
+    body.appendChild(goResult);
+  }
+}
+
+// ---------- PLAYER PICK ----------
+async function renderPlayerPick(body){
+  const names = await getNames();
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <h2>你是哪一位旅伴？</h2>
+    <div class="pill-row">
+      ${names.map((n,i)=>`<span class="pill" data-i="${i}">${n}</span>`).join('')}
+    </div>
+  `;
+  body.appendChild(card);
+  card.querySelectorAll('.pill').forEach(p=>{
+    p.onclick = () => {
+      view = {screen:'playerHub', me: parseInt(p.dataset.i)};
+      render();
+    };
+  });
+}
+
+// ---------- PLAYER FORM ----------
+async function renderPlayerForm(body){
+  const names = await getNames();
+  const me = view.me;
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <span class="stamp">填寫你的線索吊牌</span>
+    <h2>${names[me]}，寫下真實的自己</h2>
+    <div class="small">這段話會在交換禮物那天被唸出來，大家要猜是不是你。請寫真實內容～</div>
+
+    <label>性別</label>
+    <select id="f_gender">
+      <option value="男">男生</option>
+      <option value="女">女生</option>
+    </select>
+
+    <label>興趣是</label>
+    <input type="text" id="f_hobby" placeholder="例如：看展覽、健身、追劇">
+
+    <label>最喜歡喝的是</label>
+    <input type="text" id="f_drink" placeholder="例如：無糖綠茶">
+
+    <label>最喜歡吃的是</label>
+    <input type="text" id="f_food" placeholder="例如：炸雞">
+
+    <label>最想去的國家是</label>
+    <input type="text" id="f_country" placeholder="例如：冰島">
+
+    <label>這些年我做過最荒謬的事是</label>
+    <textarea id="f_absurd" placeholder="越具體越好猜，越荒謬越好笑"></textarea>
+
+    <button class="btn btn-primary" id="submitForm">送出我的吊牌</button>
+  `;
+  body.appendChild(card);
+  card.querySelector('#submitForm').onclick = async () => {
+    const btn = card.querySelector('#submitForm');
+    const data = {
+      gender: card.querySelector('#f_gender').value,
+      hobby: card.querySelector('#f_hobby').value.trim(),
+      drink: card.querySelector('#f_drink').value.trim(),
+      food: card.querySelector('#f_food').value.trim(),
+      country: card.querySelector('#f_country').value.trim(),
+      absurd: card.querySelector('#f_absurd').value.trim(),
+    };
+    if(Object.values(data).some(v=>!v)){ showToast('每一格都要填喔'); return; }
+    btn.disabled = true; btn.textContent = '送出中...';
+    const ok = await sSet('sub-'+me, data);
+    if(ok){ showToast('送出成功！'); view = {screen:'playerHub', me}; render(); }
+    else { btn.disabled = false; btn.textContent = '送出我的吊牌'; }
+  };
+}
+
+// ---------- PLAYER HUB ----------
+async function renderPlayerHub(body){
+  body.innerHTML = `<div class="card loading">載入中...</div>`;
+  const names = await getNames();
+  const me = view.me;
+  const mySub = await getSubmission(me);
+  const phase = await getPhase();
+  body.innerHTML = '';
+
+  if(!mySub){
+    renderPlayerForm(body);
+    return;
+  }
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <span class="stamp">${names[me]}</span>
+    <h2>你的吊牌已送出 ✓</h2>
+    <div class="small">興趣：${mySub.hobby}｜喝：${mySub.drink}｜吃：${mySub.food}｜想去：${mySub.country}</div>
+  `;
+  body.appendChild(card);
+
+  const assignment = await getAssignment();
+  if(assignment){
+    const targetIdx = assignment[me];
+    const targetSub = await getSubmission(targetIdx);
+    const tag = document.createElement('div');
+    tag.className = 'tag';
+    tag.innerHTML = `
+      <div class="eyebrow">你要送禮物給的神秘旅伴</div>
+      <h2 style="margin-bottom:10px;">猜猜這是誰？</h2>
+      <div class="clue-line">是一個 <b>${targetSub.gender}</b> 生</div>
+      <div class="clue-line">興趣是 <b>${targetSub.hobby}</b></div>
+      <div class="clue-line">最愛喝 <b>${targetSub.drink}</b>，最愛吃 <b>${targetSub.food}</b></div>
+      <div class="clue-line">最想去 <b>${targetSub.country}</b></div>
+      <div class="clue-line">這些年最荒謬的事：<b>${targetSub.absurd}</b></div>
+      <div class="divider"></div>
+      <div class="small"><b>任務：</b>憑這些線索猜出他/她是誰，準備一份約 <b>NT$1000</b> 的禮物，外觀統一用牛皮紙袋包裝（不要被認出來），第三天晚上現場交換＋公布解答！</div>
+    `;
+    body.appendChild(tag);
+  } else {
+    const wait = document.createElement('div');
+    wait.className = 'card';
+    wait.innerHTML = `
+      <div class="small">等所有人都填完吊牌，主辦人會公布每個人要送禮物的對象。先休息一下，逛逛沖繩吧 🌺</div>
+      <button class="btn btn-outline" id="refreshHub" style="margin-top:12px;">🔄 重新整理</button>
+    `;
+    body.appendChild(wait);
+    wait.querySelector('#refreshHub').onclick = () => renderPlayerHub(body);
+  }
+
+  const quizOrder = await getQuizOrder();
+  if(quizOrder){
+    const myAns = await getQuizAnswer(me);
+    const qbtn = document.createElement('button');
+    qbtn.className = 'btn btn-gold';
+    qbtn.textContent = myAns ? '考卷已交，查看作答內容' : '📝 開始作答（猜猜每張吊牌是誰）';
+    qbtn.onclick = () => { view = {screen:'playerQuiz', me}; render(); };
+    body.appendChild(qbtn);
+  }
+
+  const phaseNow = await getPhase();
+  if(phaseNow === 'revealed'){
+    const rbtn = document.createElement('button');
+    rbtn.className = 'btn btn-outline';
+    rbtn.style.marginTop='10px';
+    rbtn.textContent = '🎉 查看解答與排行榜';
+    rbtn.onclick = () => { view = {screen:'results'}; render(); };
+    body.appendChild(rbtn);
+  }
+}
+
+// ---------- PLAYER QUIZ ----------
+async function renderPlayerQuiz(body){
+  body.innerHTML = `<div class="card loading">載入中...</div>`;
+  const names = await getNames();
+  const me = view.me;
+  const order = await getQuizOrder();
+  const existing = await getQuizAnswer(me);
+  const subs = await getAllSubmissions(names);
+  body.innerHTML = '';
+
+  const intro = document.createElement('div');
+  intro.className = 'card';
+  intro.innerHTML = `
+    <span class="stamp">交換禮物搶答考卷</span>
+    <h2>這 12 張吊牌，分別是誰？</h2>
+    <div class="small">${existing? '你已經交卷囉，以下是你當時的答案。' : '每一題選一個你覺得最符合的人，全部選完再送出。'}</div>
+  `;
+  body.appendChild(intro);
+
+  const selects = [];
+  order.forEach((ownerIdx, qi) => {
+    const s = subs[ownerIdx];
+    const q = document.createElement('div');
+    q.className = 'tag';
+    q.innerHTML = `
+      <div class="clue-line"><span class="num-badge">${qi+1}</span>
+        <div>
+          ${s.gender}生・興趣是${s.hobby}・最愛喝${s.drink}、吃${s.food}<br>
+          最想去 <b>${s.country}</b><br>
+          最荒謬的事：<b>${s.absurd}</b>
+        </div>
+      </div>
+      <label>這是誰？</label>
+      <select class="quizSelect" data-qi="${qi}" ${existing?'disabled':''}>
+        <option value="">請選擇</option>
+        ${names.map((n,i)=>`<option value="${i}" ${existing && existing[qi]===i ? 'selected':''}>${n}</option>`).join('')}
+      </select>
+    `;
+    body.appendChild(q);
+    selects.push(q.querySelector('.quizSelect'));
+  });
+
+  if(!existing){
+    const submitBtn = document.createElement('button');
+    submitBtn.className = 'btn btn-primary';
+    submitBtn.textContent = '送出答案';
+    submitBtn.onclick = async () => {
+      const answers = selects.map(s => s.value === '' ? null : parseInt(s.value));
+      if(answers.some(a=>a===null)){ showToast('每一題都要選喔'); return; }
+      submitBtn.disabled = true; submitBtn.textContent = '交卷中...';
+      const ok = await sSet('quizans-'+me, answers);
+      if(ok){
+        let score = 0;
+        answers.forEach((a, qi) => { if(a === order[qi]) score++; });
+        await sSet('score-'+me, score);
+        showToast(`交卷成功！你答對 ${score} / 12 題`);
+        view = {screen:'playerHub', me}; render();
+      } else {
+        submitBtn.disabled = false; submitBtn.textContent = '送出答案';
+      }
+    };
+    body.appendChild(submitBtn);
+  } else {
+    const back = document.createElement('button');
+    back.className = 'btn btn-ghost';
+    back.textContent = '← 返回';
+    back.onclick = () => { view = {screen:'playerHub', me}; render(); };
+    body.appendChild(back);
+  }
+}
+
+// ---------- RESULTS ----------
+async function renderResults(body){
+  body.innerHTML = `<div class="card loading">載入中...</div>`;
+  const names = await getNames();
+  const order = await getQuizOrder();
+  const assignment = await getAssignment();
+  const subs = await getAllSubmissions(names);
+
+  const scoreKeys = await sList('score-');
+  const scores = {};
+  for(const key of scoreKeys){
+    const shortKey = key.replace(STORAGE_PREFIX, '');
+    const idx = parseInt(shortKey.replace('score-', ''));
+    if(!isNaN(idx)){
+      const v = await sGet('score-'+idx);
+      if(v !== null) scores[idx] = v;
+    }
+  }
+  names.forEach((_,i)=>{ if(!(i in scores)) scores[i] = 0; });
+
+  const ranking = Object.entries(scores).map(([i,s])=>({i:parseInt(i), score:s}))
+    .sort((a,b)=>b.score-a.score);
+
+  body.innerHTML = '';
+
+  const lead = document.createElement('div');
+  lead.className = 'card';
+  const maxScore = ranking[0]?.score ?? 0;
+  const minScore = ranking[ranking.length-1]?.score ?? 0;
+  lead.innerHTML = `
+    <span class="stamp">最終排行榜</span>
+    <h2>誰最懂大家？</h2>
+    <table>
+      <tr><th>名次</th><th>名字</th><th>答對題數</th></tr>
+      ${ranking.map((r,rank)=>`
+        <tr>
+          <td>${rank+1}</td>
+          <td class="${r.score===maxScore&&maxScore>0?'rank-gold':''} ${r.score===minScore&&ranking.length>1?'rank-last':''}">${names[r.i]}</td>
+          <td>${r.score} / 12</td>
+        </tr>`).join('')}
+    </table>
+    <div class="divider"></div>
+    <div class="small"><b style="color:var(--hibiscus)">懲罰時間：</b>答對最少的人，要立刻自拍一張醜照，發限時動態並標記所有人 📸</div>
+  `;
+  body.appendChild(lead);
+
+  if(order){
+    const cluesCard = document.createElement('div');
+    cluesCard.className = 'card';
+    cluesCard.innerHTML = `<span class="stamp">解答</span><h2>每張吊牌的真實身份</h2>`;
+    order.forEach((ownerIdx, qi) => {
+      const s = subs[ownerIdx];
+      const row = document.createElement('div');
+      row.className = 'tag';
+      row.innerHTML = `
+        <div class="clue-line"><span class="num-badge">${qi+1}</span>
+          <div><b>${names[ownerIdx]}</b><br>
+          ${s.gender}生・${s.hobby}・愛喝${s.drink}・愛吃${s.food}・想去${s.country}<br>
+          荒謬事蹟：${s.absurd}</div>
+        </div>
+      `;
+      cluesCard.appendChild(row);
+    });
+    body.appendChild(cluesCard);
+  }
+
+  if(assignment){
+    const giftCard = document.createElement('div');
+    giftCard.className = 'card';
+    giftCard.innerHTML = `<span class="stamp">送禮對照表</span><h2>誰送禮物給誰</h2>
+      <table>
+        <tr><th>送禮人</th><th>收禮人</th></tr>
+        ${Object.entries(assignment).map(([g,t])=>`<tr><td>${names[parseInt(g)]}</td><td>${names[parseInt(t)]}</td></tr>`).join('')}
+      </table>`;
+    body.appendChild(giftCard);
+  }
+}
+
+render();
+</script>
+</body>
+</html>
