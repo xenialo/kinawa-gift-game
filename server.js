@@ -1,50 +1,57 @@
 const express = require('express');
-const fs = require('fs');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, 'data.json');
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-// In-memory store, persisted to data.json on every write
-let store = {};
-try {
-  if (fs.existsSync(DATA_FILE)) {
-    store = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-  }
-} catch (e) {
-  store = {};
-}
-
-function persist() {
-  try { fs.writeFileSync(DATA_FILE, JSON.stringify(store)); } catch (e) {}
+function sbHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Prefer': 'return=minimal'
+  };
 }
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/api/get/:key', (req, res) => {
-  const val = store[req.params.key] ?? null;
-  res.json({ value: val });
+app.get('/api/get/:key', async (req, res) => {
+  const r = await fetch(
+    `${SUPABASE_URL}/rest/v1/store?key=eq.${encodeURIComponent(req.params.key)}&select=value`,
+    { headers: sbHeaders() }
+  );
+  const rows = await r.json();
+  res.json({ value: rows.length ? rows[0].value : null });
 });
 
-app.post('/api/set/:key', (req, res) => {
+app.post('/api/set/:key', async (req, res) => {
   const { value } = req.body;
   if (value === undefined) return res.status(400).json({ error: 'missing value' });
-  store[req.params.key] = value;
-  persist();
+  await fetch(`${SUPABASE_URL}/rest/v1/store`, {
+    method: 'POST',
+    headers: { ...sbHeaders(), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({ key: req.params.key, value })
+  });
   res.json({ ok: true });
 });
 
-app.get('/api/list/:prefix', (req, res) => {
-  const prefix = req.params.prefix;
-  const keys = Object.keys(store).filter(k => k.startsWith(prefix));
-  res.json({ keys });
+app.get('/api/list/:prefix', async (req, res) => {
+  const r = await fetch(
+    `${SUPABASE_URL}/rest/v1/store?key=like.${encodeURIComponent(req.params.prefix + '%')}&select=key`,
+    { headers: sbHeaders() }
+  );
+  const rows = await r.json();
+  res.json({ keys: rows.map(r => r.key) });
 });
 
-app.delete('/api/reset', (req, res) => {
-  Object.keys(store).forEach(k => { if (k.startsWith('oka26-')) delete store[k]; });
-  persist();
+app.delete('/api/reset', async (req, res) => {
+  await fetch(
+    `${SUPABASE_URL}/rest/v1/store?key=like.oka26-%25`,
+    { method: 'DELETE', headers: sbHeaders() }
+  );
   res.json({ ok: true });
 });
 
